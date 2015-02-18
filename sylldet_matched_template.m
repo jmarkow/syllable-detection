@@ -7,13 +7,15 @@ if ~isa(AUDIO,'double')
 	AUDIO=double(AUDIO);
 end
 
-
+if ~isa(TARGET_SOUND,'double')
+	TARGET_SOUND=double(TARGET_SOUND);
+end
 
 % smooth data
 
-freq_range=[200 7e3]; % bandpass before collecting template
 threshold=.1; % xcorr threshold for hits 
 range=[];
+trim_per=50;
 
 nparams=length(varargin);
 
@@ -23,34 +25,33 @@ end
 
 for i=1:2:nparams
 	switch lower(varargin{i})
-		case 'freq_range'
-			freq_range=varargin{i+1};
 		case 'range'
 			range=varargin{i+1};
+		case 'trim_per'
+			trim_per=varargin{i+1};
 	end
 end
 
 [nsamples,ntrials]=size(AUDIO);
 
-HITS=[];
-
-AUDIO=zscore(AUDIO);
-TARGET_SOUND=zscore(TARGET_SOUND);
-
-template=flipud(TARGET_SOUND(:));
+template=flipud(zscore(TARGET_SOUND(:)));
 norm_factor=template'*template;
+template=template/norm_factor;
+
 len=length(template);
+
+disp('Creating target vector...');
+
+score=filter(template,1,zscore(AUDIO));
+HITS=[];
 
 for i=1:ntrials
 
-	score=conv(AUDIO(:,i),template,'same');
-	score=score/norm_factor;
-
-	[vals,locs]=findpeaks(score,'minpeakheight',threshold,'minpeakdistance',round(.1*FS));
+	[vals,locs]=findpeaks(score(:,i),'minpeakheight',threshold,'minpeakdistance',round(.1*FS));
 
 	if ~isempty(range)
-		flag1=locs<range(1);
-		flag2=locs>range(2);
+		flag1=(locs-len/2)<range(1);
+		flag2=(locs-len/2)>range(2);
 		to_del=flag1|flag2;
 		vals(to_del)=[];
 		locs(to_del)=[];
@@ -62,8 +63,8 @@ for i=1:ntrials
 
 	[sortvals,sortidx]=sort(vals(:),1,'descend');
 
-	startpoint=round(locs(sortidx(1))-len/2);
-	stoppoint=startpoint+len-1;
+	startpoint=round(locs(sortidx(1))-(len-1));
+	stoppoint=startpoint+(len-1);
 
 	if startpoint>1 & stoppoint<length(score)
 		HITS=[HITS AUDIO(startpoint:stoppoint,i)];
@@ -71,4 +72,4 @@ for i=1:ntrials
 
 end
 
-NEW_FILTER=flipud(trimmean(HITS,50,'round',2));
+NEW_FILTER=flipud(trimmean(HITS,trim_per,'round',2));
