@@ -1,13 +1,12 @@
-function [CONF_MATRIX THRESHOLDS]=sylldet_eval_filter_roc(FILTERED_DATA,TARGET,varargin)
+function [STATS]=sylldet_eval_filter_roc(FILTERED_DATA,TARGET,varargin)
 %
 %
 %
 
 % smooth data
 
-THRESHOLDS=[];
-
 nparams=length(varargin);
+jitter=1e3;
 
 if mod(nparams,2)>0
 	error('ephysPipeline:argChk','Parameters must be specified as parameter/value pairs!');
@@ -15,17 +14,17 @@ end
 
 for i=1:2:nparams
 	switch lower(varargin{i})
-		case 'THRESHOLDS'
-			THRESHOLDS=varargin{i+1};
+		case 'jitter'
+			jitter=varargin{i+1};
 	end
 end
 
-THRESHOLDS=linspace(min(FILTERED_DATA(:)),max(FILTERED_DATA(:)),200);
-nthresh=length(THRESHOLDS);
+thresholds=linspace(min(FILTERED_DATA(:)),max(FILTERED_DATA(:)),200);
+nthresh=length(thresholds);
 
 [nsamples,ntrials]=size(FILTERED_DATA);
 
-TARGET=TARGET(1):TARGET(2);
+TARGET=TARGET-jitter:TARGET+jitter;
 nontarget=setdiff(1:nsamples,TARGET);
 
 tp=zeros(1,nthresh);
@@ -34,11 +33,12 @@ tn=zeros(1,nthresh);
 fp=zeros(1,nthresh);
 fn=zeros(1,nthresh);
 
-CONF_MATRIX=zeros(2,2,length(THRESHOLDS));
+STATS.conf_mat=zeros(2,2,length(thresholds));
+STATS.acc=zeros(1,length(thresholds));
 
-for i=1:length(THRESHOLDS)
+for i=1:length(thresholds)
 
-	idx=FILTERED_DATA>THRESHOLDS(i);
+	idx=FILTERED_DATA>thresholds(i);
 
 	[~,trials]=find(idx(TARGET,:));
 
@@ -50,12 +50,10 @@ for i=1:length(THRESHOLDS)
 	fp(i)=length(unique(trials));
 	tn(i)=ntrials-fp(i);
 
-	CONF_MATRIX(1:2,1:2,i)=[ tp(i) fn(i) ; fp(i) tn(i) ]; 
+	STATS.conf_mat(1:2,1:2,i)=[ tp(i) fn(i) ; fp(i) tn(i) ]; 
+	STATS.acc(i)=sum(diag(STATS.conf_mat(:,:,i)))/(ntrials*2);
 end
 
+STATS.thresholds=thresholds;
+
 % optimal point, closest in Euclidean distance to [0,1]
-
-
-figure();plot(fp./ntrials,tp./ntrials);
-
-

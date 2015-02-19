@@ -1,4 +1,4 @@
-function NEW_FILT=sylldet_fir_optimize(COEFFS,FILTERED_DATA,TARGET_IDXS)
+function IDXS=sylldet_fir_optimize(COEFFS,FILTERED_DATA,TARGET_IDXS)
 %
 %
 %
@@ -6,9 +6,9 @@ function NEW_FILT=sylldet_fir_optimize(COEFFS,FILTERED_DATA,TARGET_IDXS)
 
 
 order=length(COEFFS);
-step_size=50; % stepsize in samples
+step_size=25; % stepsize in samples
 steps_forward=unique([1 step_size:step_size:order]);
-trials=50;
+trials=100:150;
 
 [nsamples,ntrials]=size(FILTERED_DATA);
 
@@ -19,8 +19,8 @@ for i=1:length(steps_forward)
 	% matched template is flipped average, start moving from first to last point
 
 	tmp_filter=COEFFS(steps_forward(i):order);
-	new_hitmat=filter(tmp_filter,1,FILTERED_DATA(:,1:trials));
-	snr_vec_forward(i)=sylldet_eval_filter_snr(new_hitmat,TARGET_IDXS);
+	new_hitmat=filter(tmp_filter,1,FILTERED_DATA(:,trials));
+	snr_vec_forward(i)=median(sylldet_eval_filter_snr(new_hitmat,TARGET_IDXS));
 
 end
 
@@ -40,8 +40,8 @@ snr_vec_backward=zeros(1,length(steps_backward));
 for i=1:length(steps_backward)
 
 	tmp_filter=COEFFS(selection:steps_backward(i));
-	new_hitmat=filter(tmp_filter,1,FILTERED_DATA(:,1:trials));
-	snr_vec_backward(i)=sylldet_eval_filter_snr(new_hitmat,TARGET_IDXS);
+	new_hitmat=filter(tmp_filter,1,FILTERED_DATA(:,trials));
+	snr_vec_backward(i)=median(sylldet_eval_filter_snr(new_hitmat,TARGET_IDXS));
 end
 
 fig=figure();
@@ -51,4 +51,4 @@ xlabel('Points from the first cutoff');
 
 selection2=input('Enter the number of points to include from the cut point:  ');
 
-NEW_FILT=COEFFS(selection:selection2);
+IDXS=[selection selection2];

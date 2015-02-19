@@ -13,9 +13,11 @@ end
 
 % smooth data
 
-threshold=.1; % xcorr threshold for hits 
+threshold=.15; % xcorr threshold for hits 
 range=[];
 trim_per=50;
+marker_jitter=300;
+marker=[];
 
 nparams=length(varargin);
 
@@ -25,10 +27,12 @@ end
 
 for i=1:2:nparams
 	switch lower(varargin{i})
-		case 'range'
-			range=varargin{i+1};
+		case 'marker'
+			marker=varargin{i+1};
 		case 'trim_per'
 			trim_per=varargin{i+1};
+		case 'marker_jitter'
+			marker_jitter=varargin{i+1};
 	end
 end
 
@@ -49,9 +53,9 @@ for i=1:ntrials
 
 	[vals,locs]=findpeaks(score(:,i),'minpeakheight',threshold,'minpeakdistance',round(.1*FS));
 
-	if ~isempty(range)
-		flag1=(locs-len/2)<range(1);
-		flag2=(locs-len/2)>range(2);
+	if ~isempty(marker)
+		flag1=locs<marker-marker_jitter;
+		flag2=locs>marker+marker_jitter;
 		to_del=flag1|flag2;
 		vals(to_del)=[];
 		locs(to_del)=[];

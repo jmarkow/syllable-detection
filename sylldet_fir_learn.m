@@ -21,11 +21,12 @@ order=2000;
 onset_delay=0;
 range=[];
 sigma=.001;
-buffer=.005;
 filt_type='lms';
 empty_trials=1;
 block_size=3;
 jitter=5;
+marker_jitter=300;
+marker=[];
 
 nparams=length(varargin);
 
@@ -47,8 +48,8 @@ for i=1:2:nparams
 			order=varargin{i+1};
 		case 'onset_delay'
 			onset_delay=varargin{i+1};
-		case 'range'
-			range=varargin{i+1};
+		case 'marker'
+			marker=varargin{i+1};
 		case 'filt_type'
 			filt_type=varargin{i+1};
 		case 'block_size'
@@ -57,6 +58,8 @@ for i=1:2:nparams
 			empty_trials=varargin{i+1};
 		case 'jitter'
 			jitter=varargin{i+1};
+		case 'marker_jitter'
+			marker_jitter=varargin{i+1};
 	end
 end
 
@@ -79,9 +82,9 @@ for i=1:ntrials
 
 	[vals,locs]=findpeaks(score(:,i),'minpeakheight',threshold,'minpeakdistance',round(.1*FS));
 	
-	if ~isempty(range)
-		flag1=(locs-len/2)<range(1);
-		flag2=(locs-len/2)>range(2);
+	if ~isempty(marker)
+		flag1=locs<marker-marker_jitter;
+		flag2=locs>marker+marker_jitter;
 		to_del=flag1|flag2;
 		vals(to_del)=[];
 		locs(to_del)=[];
@@ -94,10 +97,8 @@ for i=1:ntrials
 
 	[sortvals,sortidx]=sort(vals(:),1,'descend');
 
-	startpoint=(locs(sortidx(1))-(len-1)); % onset of match
-	stoppoint=startpoint+(len-1);
-
-	hitpoint=round(stoppoint-round(onset_delay*FS));
+	stoppoint=locs(sortidx(1));
+	hitpoint=round(stoppoint-round(onset_delay*len));
 
 	hitpoints=hitpoint-jitter:hitpoint+jitter;
 	hitpoints(hitpoints<1|hitpoints>nsamples)=[];
@@ -115,7 +116,7 @@ if empty_trials
 	[nsamples,ntrials]=size(AUDIO);
 end
 
-disp('Learning filter (grab a coffee/beer, this may take a while...');
+disp('Learning filter (grab a coffee/beer, this may take a while)...');
 
 switch lower(filt_type(1))
 
