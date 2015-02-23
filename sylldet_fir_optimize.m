@@ -8,7 +8,7 @@ function IDXS=sylldet_fir_optimize(COEFFS,FILTERED_DATA,TARGET_IDXS)
 order=length(COEFFS);
 step_size=25; % stepsize in samples
 steps_forward=unique([1 step_size:step_size:order]);
-trials=100:150;
+trials=1:min(size(FILTERED_DATA,2),50);
 
 [nsamples,ntrials]=size(FILTERED_DATA);
 

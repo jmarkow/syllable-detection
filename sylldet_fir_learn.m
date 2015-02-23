@@ -25,7 +25,7 @@ filt_type='lms';
 empty_trials=1;
 block_size=3;
 jitter=5;
-marker_jitter=300;
+marker_jitter=400;
 marker=[];
 
 nparams=length(varargin);

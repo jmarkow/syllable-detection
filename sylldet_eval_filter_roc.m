@@ -19,7 +19,7 @@ for i=1:2:nparams
 	end
 end
 
-thresholds=linspace(min(FILTERED_DATA(:)),max(FILTERED_DATA(:)),200);
+thresholds=linspace(min(FILTERED_DATA(:)),max(FILTERED_DATA(:)),500);
 nthresh=length(thresholds);
 
 [nsamples,ntrials]=size(FILTERED_DATA);

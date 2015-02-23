@@ -37,8 +37,8 @@ for i=1:2:nparams
 end
 
 [nsamples,ntrials]=size(AUDIO);
-
 template=flipud(zscore(TARGET_SOUND(:)));
+
 norm_factor=template'*template;
 template=template/norm_factor;
 
