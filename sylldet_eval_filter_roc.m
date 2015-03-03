@@ -25,6 +25,7 @@ nthresh=length(thresholds);
 [nsamples,ntrials]=size(FILTERED_DATA);
 
 TARGET=TARGET-jitter:TARGET+jitter;
+TARGET(TARGET<1|TARGET>nsamples)=[];
 nontarget=setdiff(1:nsamples,TARGET);
 
 tp=zeros(1,nthresh);

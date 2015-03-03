@@ -16,8 +16,9 @@ end
 threshold=.15; % xcorr threshold for hits 
 range=[];
 trim_per=50;
-marker_jitter=300;
+marker_jitter=50;
 marker=[];
+order=[];
 
 nparams=length(varargin);
 
@@ -33,7 +34,13 @@ for i=1:2:nparams
 			trim_per=varargin{i+1};
 		case 'marker_jitter'
 			marker_jitter=varargin{i+1};
+		case 'order'
+			order=varargin{i+1};
 	end
+end
+
+if isempty(order)
+	order=length(TARGET_SOUND);
 end
 
 [nsamples,ntrials]=size(AUDIO);
@@ -67,8 +74,8 @@ for i=1:ntrials
 
 	[sortvals,sortidx]=sort(vals(:),1,'descend');
 
-	startpoint=round(locs(sortidx(1))-(len-1));
-	stoppoint=startpoint+(len-1);
+	stoppoint=round(locs(sortidx(1)));
+	startpoint=stoppoint-(order-1);
 
 	if startpoint>1 & stoppoint<length(score)
 		HITS=[HITS AUDIO(startpoint:stoppoint,i)];
@@ -77,3 +84,4 @@ for i=1:ntrials
 end
 
 NEW_FILTER=flipud(trimmean(HITS,trim_per,'round',2));
+%NEW_FILTER=flipud(median(HITS,2));

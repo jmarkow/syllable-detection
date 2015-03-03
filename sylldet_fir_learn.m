@@ -21,11 +21,11 @@ order=2000;
 onset_delay=0;
 range=[];
 sigma=.001;
-filt_type='lms';
+filt_type='nlms';
 empty_trials=1;
 block_size=3;
 jitter=5;
-marker_jitter=400;
+marker_jitter=600;
 marker=[];
 
 nparams=length(varargin);

@@ -26,6 +26,7 @@ end
 [nsamples,ntrials]=size(FILTERED_DATA);
 
 TARGET=TARGET-jitter:TARGET+jitter;
+TARGET(TARGET<1|TARGET>nsamples)=[];
 NONTARGET=setdiff(1:nsamples,TARGET);
 
 hitdata=FILTERED_DATA(TARGET,:);
