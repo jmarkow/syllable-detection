@@ -1,5 +1,51 @@
 function [NEW_FILTER,TARGET_MATRIX]=sylldet_fir_learn(AUDIO,TARGET_SOUND,FS,varargin)
+% Train adaptive filter to detected a particular target
+% 
+% [NEW_FILTER,TARGET_MATRIX]=sylldet_fir_learn(AUDIO,TARGET_SOUND,FS,varargin)
 %
+%	AUDIO
+%	nsample x trials matrix of audio samples to train on
+%
+%	TARGET_SOUND
+%	example of target sound
+%
+%	FS
+%	sampling rate
+%
+%	The following may be passed as parameter/value pairs:
+%
+%		threshold
+%		threshold for determining a match with template (normalized xcorr) (float, default:  .1)
+%
+%		step_size
+%		step size for adaptive filter algorithm (float, default: .0008)
+%
+%		offset
+%		offset for NLMS (float, default: 1e-9)
+%
+%		leakage
+%		filter leakage (float, default: 1, no leakage)
+%
+%		order
+%		number of filter coefficients (integer, default: 2e3)
+%
+%		offset_buffer
+%		how far from offset to detect sound (in fraction of syllable length, default .2, i.e. 20% of syllable length from offset)
+%
+%		filt_type
+%		training algorithm (string,default: 'nlms', options [n]lms, [l]ms, [r]ls, [b]lmsfft)
+%
+%		empty_trials
+%		remove trials where no matches to template were foud (logical, default: 1)
+%
+%		block_size
+%		block size for blmsfft algorithm (integer, default: 3)
+%
+%		jitter
+%		n samples to the left and right of match to mark with 1 (integer, default: 5)
+%
+%		marker_jitter
+%		n samples to the left and right of match idx to look for hits (integer, default: 600)
 %
 %
 
@@ -11,22 +57,18 @@ if ~isa(TARGET_SOUND,'double')
 	TARGET_SOUND=double(TARGET_SOUND);
 end
 
-% smooth data
-
 threshold=.1; % xcorr threshold for hits 
-step_size=.0008;
-offset=1e-9;
-leakage=1;
-order=2000;
-onset_delay=0;
-range=[];
-sigma=.001;
-filt_type='nlms';
-empty_trials=1;
-block_size=3;
-jitter=5;
-marker_jitter=600;
-marker=[];
+step_size=.0008; % learning step size
+offset=1e-9; % nlms offset
+leakage=1; % filter leakage
+order=2000; % n coeffs
+offset_buffer=0; %
+filt_type='nlms'; % learning algorithm
+empty_trials=1; % delete empty traisl? 
+block_size=3; % block size (blmsfft only)
+jitter=5; % jitter for marking hits
+marker_jitter=600; % jitter for detecting hits
+marker=[]; % where should a hit be?
 
 nparams=length(varargin);
 
@@ -46,8 +88,8 @@ for i=1:2:nparams
 			leakage=varargin{i+1};
 		case 'order'
 			order=varargin{i+1};
-		case 'onset_delay'
-			onset_delay=varargin{i+1};
+		case 'offset_buffer'
+			offset_buffer=varargin{i+1};
 		case 'marker'
 			marker=varargin{i+1};
 		case 'filt_type'
@@ -98,7 +140,7 @@ for i=1:ntrials
 	[sortvals,sortidx]=sort(vals(:),1,'descend');
 
 	stoppoint=locs(sortidx(1));
-	hitpoint=round(stoppoint-round(onset_delay*len));
+	hitpoint=round(stoppoint-round(offset_buffer*len));
 
 	hitpoints=hitpoint-jitter:hitpoint+jitter;
 	hitpoints(hitpoints<1|hitpoints>nsamples)=[];

@@ -1,9 +1,30 @@
 function [STATS]=sylldet_eval_filter_roc(FILTERED_DATA,TARGET,varargin)
+% Computes basic statitistics to evaluate filter performance
 %
+%[NEW_FILTER,TARGET_MATRIX]=sylldet_eval_filter_roc(FILTERED_DATA,TARGET,varargin)
+%
+%	FILTERED_DATA
+%	nsamples x trials matrix of squared filter output
+%
+%	TARGET
+%	nsamples
+%
+%	FS
+%	sampling rate
+%
+%	The following may be passed as parameter/value pairs:
+%
+%		threshold
+%		threshold for determining a match with template (normalized xcorr) (float, default:  .1)
+%
+%		step_size
+%		step size for adaptive filter algorithm (float, default: .0008)
+%
+%		
 %
 %
 
-% smooth data
+%
 
 nparams=length(varargin);
 jitter=1e3;
@@ -19,6 +40,8 @@ for i=1:2:nparams
 	end
 end
 
+% which thresholds to try?
+
 thresholds=linspace(min(FILTERED_DATA(:)),max(FILTERED_DATA(:)),500);
 nthresh=length(thresholds);
 
@@ -27,6 +50,8 @@ nthresh=length(thresholds);
 TARGET=TARGET-jitter:TARGET+jitter;
 TARGET(TARGET<1|TARGET>nsamples)=[];
 nontarget=setdiff(1:nsamples,TARGET);
+
+% how many trigger points are in the target range?
 
 tp=zeros(1,nthresh);
 tn=zeros(1,nthresh);
@@ -41,7 +66,7 @@ for i=1:length(thresholds)
 
 	idx=FILTERED_DATA>thresholds(i);
 
-	[~,trials]=find(idx(TARGET,:));
+	[smps,trials]=find(idx(TARGET,:));
 
 	tp(i)=length(unique(trials));
 	fn(i)=ntrials-tp(i);

@@ -1,4 +1,4 @@
-function sylldet_eval_filter_visual(COEFFS,TRIM_IDXS,SOUND_DATA,STATS,FS)
+function sylldet_eval_filter_visual(COEFFS,TRIM_IDXS,FILT_DATA,SOUND_DATA,STATS,FS)
 %
 %
 %
@@ -29,7 +29,7 @@ trim_idxs_t=(order-TRIM_IDXS)/FS;
 
 figure();
 
-[s,f,t]=zftftb_pretty_sonogram(COEFFS(end:-1:1),FS,'zeropad',0,'len',100,'overlap',99);
+[s,f,t]=zftftb_pretty_sonogram(COEFFS(end:-1:1),FS,'zeropad',0,'len',100,'overlap',99,'clipping',[-3 1],'norm_amp',1);
 
 ax(1)=subplot(2,1,1);
 imagesc(t,f/1e3,s);axis xy;
@@ -67,7 +67,7 @@ rms_filt=ones(rms_smps,1)/rms_smps;
 
 rms=sqrt(filter(rms_filt,1,filt_data.^2));
 
-[s,f,t]=zftftb_pretty_sonogram(SOUND_DATA(:,trial),FS,'zeropad',0);
+[s,f,t]=zftftb_pretty_sonogram(SOUND_DATA(:,trial),FS,'zeropad',0,'clipping',[-2 1]);
 [~,loc]=max(STATS.acc);
 threshold=STATS.thresholds(loc);
 
@@ -85,6 +85,7 @@ end
 figure();ax(1)=subplot(4,1,1);
 imagesc(t,f/1e3,s);axis xy;
 ylabel('Fs (kHz)');
+title('Triggers at optimal threshold');
 freezeColors;
 
 ax(2)=subplot(4,1,2:4);
@@ -116,3 +117,19 @@ plot(fpr,tpr);
 box off;
 ylabel('Hit rate');
 xlabel('False alarm rate');
+
+
+figure();ax(1)=subplot(4,1,1);
+imagesc(t,f/1e3,s);axis xy;
+ylabel('Fs (kHz)');
+title('Squared filter output');
+freezeColors;
+
+ax(2)=subplot(4,1,2:4);
+imagesc(timevec_song,[],FILT_DATA');
+colormap(hot);
+ylabel('Trial');
+xlabel('Time (s)');
+freezeColors;
+hold on;
+

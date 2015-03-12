@@ -26,5 +26,15 @@ switch lower(FORMAT(1))
 
 		save(FILE,'FIR','-ascii','-double');
 
+	case 't'
+
+		
+		% ascii
+
+		FIR=FIR(:);
+
+		save(FILE,'FIR','-ascii','-double');
+
+
 	otherwise
 end
