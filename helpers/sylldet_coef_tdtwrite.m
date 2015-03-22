@@ -11,30 +11,18 @@ switch lower(FORMAT(1))
 		% binary
 		
 		fid=fopen(FILE,'wb');
-
-		for i=1:length(FIR)
-			fwrite(fid,FIR,'double');
-		end
-
+		fwrite(fid,FIR,'double');
 		fclose(fid);
 
 	case 'a'
 
 		% ascii
 
-		FIR=FIR(:);
+		if isvector(FIR)
+			FIR=FIR(:);
+		end
 
 		save(FILE,'FIR','-ascii','-double');
-
-	case 't'
-
-		
-		% ascii
-
-		FIR=FIR(:);
-
-		save(FILE,'FIR','-ascii','-double');
-
 
 	otherwise
 end
