@@ -59,7 +59,4 @@ for i=1:nsteps
 	% number of zero crossings...
 	
 	PITCH(i)=sum(datawin)*norm_fact;
-
 end
-
-

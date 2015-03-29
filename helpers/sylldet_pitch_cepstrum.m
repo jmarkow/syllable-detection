@@ -30,8 +30,6 @@ for i=1:2:nparams
 	end
 end
 
-max_lag=min(max_lag,len);
-
 [b,a]=ellip(4,.2,40,[filtering]/(FS/2),'bandpass');
 AUDIO=filtfilt(b,a,AUDIO);
 
