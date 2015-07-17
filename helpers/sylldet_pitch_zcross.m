@@ -39,7 +39,7 @@ step_size=len-overlap;
 
 [nsamples]=length(AUDIO);
 
-steps=1:step_size:nsamples-len;
+steps=1:step_size:nsamples-1-len;
 nsteps=length(steps);
 PITCH=zeros(nsteps,1);
 

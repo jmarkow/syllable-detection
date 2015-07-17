@@ -37,8 +37,8 @@ for i=1:length(cf)
 	passband1=cf(i)-bw(i)/2;
 	passband2=cf(i)+bw(i)/2;
 
-	stopband1=passband1-stopband(i);
-	stopband2=passband2+stopband(i);
+	stopband1=max(passband1-stopband(i),1);
+	stopband2=min(passband2+stopband(i),FS/2);
 
 	%hd=fdesign.bandpass('Fst1,Fp1,Fp2,Fst2,Ast1,Ap,Ast2',stopband1,passband1,...
 	%	passband2,stopband2,attenuation,ripple,attenuation,FS);

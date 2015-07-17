@@ -35,7 +35,7 @@ len_smps=round((len/1e3)*FS);
 overlap_smps=round((overlap/1e3)*FS);
 step_size=len_smps-overlap_smps;
 
-steps=1:step_size:nsamples-len_smps;
+steps=1:step_size:nsamples-1-len_smps;
 nsteps=length(steps);
 
 PITCH_MATRIX=zeros(nsteps,ntrials);
